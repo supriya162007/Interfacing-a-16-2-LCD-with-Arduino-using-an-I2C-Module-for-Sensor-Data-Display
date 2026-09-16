@@ -1,56 +1,223 @@
-# EXP — INTERFACING A 16×2 LCD WITH ARDUINO USING AN I2C MODULE FOR SENSOR DATA DISPLAY
 
-## Aim
+# EXPERIMENT: INTERFACING A 16×2 LCD WITH ARDUINO USING AN I2C MODULE FOR SENSOR DATA DISPLAY
 
-To interface a **16×2 LCD display with Arduino using an I2C module** and display sensor data on the LCD.
+## AIM
 
-## Objectives
+To interface a **16×2 LCD display with Arduino UNO using an I2C module** and display **temperature and humidity values obtained from a DHT11 sensor**.
 
-- To understand the operation of a 16×2 LCD.
-- To interface the LCD with Arduino using an I2C module.
-- To reduce the number of GPIO pins required for LCD communication.
-- To read sensor data using Arduino.
-- To display the sensor readings on the LCD.
+## OBJECTIVES
 
-## Hardware / Software Tools Required
+* To understand the operation of a 16×2 LCD.
+* To interface the LCD with Arduino using an I2C module.
+* To reduce the number of GPIO pins required for LCD communication.
+* To interface a DHT11 temperature and humidity sensor with Arduino.
+* To display the sensor readings on the LCD.
+
+## APPARATUS REQUIRED
 
 ### Hardware
 
-- Arduino UNO
-- 16×2 LCD Display
-- I2C LCD Module (PCF8574-based)
-- DHT11 Temperature and Humidity Sensor
-- Breadboard
-- Jumper wires
-- USB cable
+1. Arduino UNO
+2. 16×2 LCD Display
+3. I2C LCD Module (PCF8574 based)
+4. DHT11 Temperature and Humidity Sensor
+5. Breadboard
+6. Jumper wires
+7. USB cable
 
 ### Software
 
-- Arduino IDE
-- Arduino C/C++ programming language
-- LiquidCrystal_I2C library
-- DHT sensor library
+1. Arduino IDE
+2. Arduino C/C++ programming language
+3. LiquidCrystal_I2C library
+4. DHT sensor library
+5. Wokwi Simulator
 
-## Components
+## COMPONENTS
 
-### 16×2 LCD
-### I2C Module
-### Circuit Connections
-### I2C Communication
-### Working Principle
+### 1. Arduino UNO
+
+Arduino UNO is the microcontroller board used to read the DHT11 sensor data and send the data to the LCD.
+
+### 2. 16×2 LCD
+
+A 16×2 LCD can display **16 characters in each of 2 rows**. It is used to display the temperature and humidity values.
+
+### 3. I2C Module
+
+The I2C module is connected to the LCD and allows communication using only two signal lines:
+
+* SDA – Serial Data
+* SCL – Serial Clock
+
+For Arduino UNO:
+
+* SDA → A4
+* SCL → A5
+
+### 4. DHT11 Sensor
+
+The DHT11 sensor measures:
+
+* Temperature
+* Relative humidity
+
+The sensor provides the readings through its digital data pin.
+
+## CIRCUIT CONNECTIONS
+
+### LCD with I2C Module and Arduino UNO
+
+| I2C LCD Pin | Arduino UNO |
+| ----------- | ----------- |
+| VCC         | 5V          |
+| GND         | GND         |
+| SDA         | A4          |
+| SCL         | A5          |
+
+### DHT11 with Arduino UNO
+
+| DHT11 Pin | Arduino UNO |
+| --------- | ----------- |
+| VCC       | 5V          |
+| DATA      | D2          |
+| GND       | GND         |
+
+> In Wokwi, use the DHT11 component and connect its DATA pin to Arduino digital pin D2.
+
+## BLOCK DIAGRAM
+
+**DHT11 Sensor → Arduino UNO → I2C Module → 16×2 LCD**
+
+The DHT11 measures temperature and humidity. Arduino reads the sensor values and sends them to the LCD through the I2C interface.
+
+## I2C COMMUNICATION
+
+I2C is a serial communication protocol used to communicate between the Arduino and LCD.
+
+It mainly uses two communication lines:
+
+* **SDA** – carries data
+* **SCL** – carries clock signal
+
+The I2C module reduces the number of Arduino pins required for interfacing the LCD.
+
+## WORKING PRINCIPLE
 
 1. The DHT11 sensor measures temperature and humidity.
-2. Arduino reads the sensor values through the digital data pin.
-3. The Arduino processes the received sensor data.
+2. Arduino reads the temperature and humidity values through the DHT11 data pin.
+3. Arduino processes the received sensor data.
 4. The processed values are sent to the LCD through the I2C interface.
-5. The LCD displays the temperature on one line.
-6. The humidity is displayed on the second line.
+5. The temperature is displayed on the first line of the LCD.
+6. The humidity is displayed on the second line of the LCD.
 7. The readings are periodically updated.
 
-## Arduino Program
+## ALGORITHM
 
-## Observation
+1. Start the program.
+2. Initialize the LCD using the I2C interface.
+3. Initialize the DHT11 sensor.
+4. Read the temperature from the DHT11 sensor.
+5. Read the humidity from the DHT11 sensor.
+6. Display the temperature on the first row of the LCD.
+7. Display the humidity on the second row of the LCD.
+8. Wait for a short time.
+9. Repeat the process continuously.
+10. Stop.
 
-## Result
+## ARDUINO PROGRAM
 
-Thus, the **16×2 LCD was successfully interfaced with Arduino UNO using an I2C module**, and the temperature and humidity values obtained from the DHT11 sensor were successfully displayed on the LCD. The experiment demonstrates the use of **I2C communication for efficient sensor-data display** in embedded and IoT applications.
+```cpp
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <DHT.h>
+
+#define DHTPIN 2
+#define DHTTYPE DHT11
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup()
+{
+  lcd.init();
+  lcd.backlight();
+
+  dht.begin();
+
+  lcd.setCursor(0, 0);
+  lcd.print("Sensor Monitor");
+  delay(2000);
+  lcd.clear();
+}
+
+void loop()
+{
+  float temperature = dht.readTemperature();
+  float humidity = dht.readHumidity();
+
+  if (isnan(temperature) || isnan(humidity))
+  {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Sensor Error");
+    delay(2000);
+    return;
+  }
+
+  lcd.clear();
+
+  lcd.setCursor(0, 0);
+  lcd.print("Temp: ");
+  lcd.print(temperature);
+  lcd.print((char)223);
+  lcd.print("C");
+
+  lcd.setCursor(0, 1);
+  lcd.print("Humidity: ");
+  lcd.print(humidity);
+  lcd.print("%");
+
+  delay(2000);
+}
+```
+
+## OBSERVATION
+
+| S.No | Temperature (°C) | Humidity (%) |
+| ---: | ---------------: | -----------: |
+|    1 |               25 |           60 |
+|    2 |               26 |           62 |
+|    3 |               27 |           64 |
+
+The observed values may vary depending on the DHT11 sensor readings or Wokwi simulation values.
+
+<img width="516" height="387" alt="images" src="https://github.com/user-attachments/assets/5e280bf9-7ae5-4da1-aa09-8c85631263d7" />
+
+## EXPECTED OUTPUT
+
+The LCD displays the sensor readings approximately as:
+
+```text
+Temp: 28.0°C
+Humidity: 56.0%
+```
+
+The values are continuously updated according to the DHT11 sensor.
+
+## PROCEDURE
+
+1. Open Arduino IDE or Wokwi.
+2. Create a new Arduino UNO project.
+3. Add Arduino UNO, DHT11 sensor and 16×2 LCD with I2C module.
+4. Connect the DHT11 DATA pin to D2.
+5. Connect the I2C LCD SDA pin to A4.
+6. Connect the I2C LCD SCL pin to A5.
+7. Connect VCC and GND properly.
+8. Install/include the required `DHT` and `LiquidCrystal_I2C` libraries.
+9. Upload/run the program.
+10. Observe the temperature and humidity values on the LCD.
+
+## RESULT
+
+Thus, the **16×2 LCD was successfully interfaced with Arduino UNO using an I2C module**, and the **temperature and humidity values obtained from the DHT11 sensor were successfully displayed on the LCD**. The experiment demonstrates the use of **I2C communication for efficient sensor-data display** in embedded and IoT applications.
